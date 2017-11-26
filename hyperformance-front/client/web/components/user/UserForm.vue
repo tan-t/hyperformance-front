@@ -4,6 +4,7 @@
   <v-btn
    @click="onClickRegister"
    :disabled="!valid"
+   v-if="showsButton"
    >
    register
  </v-btn>
@@ -11,7 +12,7 @@
 </template>
 
 <script>
-import AbstractForm from '@/components/bt/AbstractForm'
+import AbstractForm from '@/components/bt/form/AbstractForm'
 
 const baseUrl = '/user/'
 const getUrl = function (action,opt_id) {
@@ -35,7 +36,7 @@ export default {
 
   beforeRouteEnter (route, redirect, next) {
     if(!route.params.id){
-      next();
+      next(vm => vm.clear())
       return;
     }
 
@@ -45,8 +46,6 @@ export default {
   },
 
   beforeRouteUpdate (to, from, next) {
-    this.post = null
-
     if(!to.params.id){
       next();
       return;
@@ -80,6 +79,9 @@ export default {
       // べたがき...
       this.getItem('password2').model = this.getItem('password').model;
     },
+    clear: function() {
+      this.$refs.form.reset()
+    },
     getItem: function(itemId) {
       return this.fields.find(field=>field.id == itemId);
     },
@@ -92,7 +94,8 @@ export default {
         io.socket.post(getUrl(this.action,model.id),model,(res,stat)=>{
           switch (stat.statusCode) {
             case 200:
-            this.$router.push(getUrl('',res.id));
+            case 201:
+            this.login(model.username,model.password);
             return;
             case 400:
             console.log(res);
@@ -104,6 +107,25 @@ export default {
           }
         });
       }
+    },
+    login:function(identifier,password) {
+      io.socket.post('/auth/local',{identifier,password},(res,stat)=>{
+        switch (stat.statusCode) {
+          case 200:
+            var redirect = this.$route.query.redirect;
+            if(!redirect){
+              redirect = '/home/';
+            }
+            this.$router.push(redirect)
+          return;
+          case 403:
+            this.errors = ['identifier and password not match.'];
+            return;
+          default:
+          console.log(stat.statusCode);
+          console.log(res);
+        }
+      });
     },
     handleServerError: function(error) {
       Object.keys(error.invalidAttributes).forEach(attribute=>{
@@ -158,7 +180,8 @@ export default {
             errors:[]
         }
       ],
-      valid: true
+      valid: true,
+      showsButton:true
     }
   },
   props: ['action']

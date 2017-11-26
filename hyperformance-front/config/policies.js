@@ -26,7 +26,7 @@ module.exports.policies = {
   *                                                                          *
   ***************************************************************************/
 
-  // '*': true,
+  '*': true,
 
   /***************************************************************************
   *                                                                          *
@@ -34,7 +34,43 @@ module.exports.policies = {
   * and its actions                                                          *
   *                                                                          *
   ***************************************************************************/
-	// RabbitController: {
+  SessionController:{
+    '*':true
+  },
+  UserController:{
+    '*':true
+  },
+  HomeController: {
+    '*':false,
+    getInfo:['sessionAuth']
+  },
+  CompanyController: {
+    '*':false,
+    show:['sessionAuth','isCompanyMember'],
+    update:['sessionAuth','isCompanyMember'],
+    create:'sessionAuth',
+    join:'sessionAuth',
+    isMember:'sessionAuth',
+    member:['sessionAuth','isCompanyMember'],
+    invitation:['sessionAuth','isCompanyMember'],
+    index:'sessionAuth'
+  },
+  CompanyMemberController: {
+    '*':['sessionAuth','isCompanyMember']
+  },
+  InvitationController: {
+    '*':false,
+    inviteToCompany:['sessionAuth','isCompanyMember'],
+    createPublicLinkToCompany:['sessionAuth','isCompanyMember']
+  },
+  ProjectController: {
+    '*':false,
+    create:['sessionAuth','isCompanyMember'],
+    show:['sessionAuth','isProjectMember'],
+    update:['sessionAuth','isProjectMember']
+  },
+
+  // RabbitController: {
 
 		// Apply the `false` policy as the default for all of RabbitController's actions
 		// (`false` prevents all access, which ensures that nothing bad happens to our rabbits)

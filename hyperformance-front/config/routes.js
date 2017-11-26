@@ -34,7 +34,32 @@ module.exports.routes = {
 
   '/': {
     view: 'homepage'
-  }
+  },
+
+
+  'get /company/' : 'CompanyController.index',
+
+  'get /company/:companyUrl': 'CompanyController.show',
+  'post /company/create': 'CompanyController.create',
+  'post /company/:companyUrl/update': 'CompanyController.update',
+  'get /company/:companyUrl/member' : 'CompanyController.member',
+  'get /company/:companyUrl/invitation' : 'CompanyController.invitation',
+
+  'get /project/:projectUrl': 'ProjectController.show',
+  'post /project/create': 'ProjectController.create',
+  'post /project/:projectUrl/update': 'ProjectController.update',
+
+
+  'get /company/:companyUrl/member/:id': 'CompanyMemberController.show',
+  'get /company/:companyUrl/ismember': 'CompanyController.isMember',
+  'post /company/:companyUrl/member/:id/update': 'CompanyMemberController.update',
+
+  'get /project/:projectUrl/section/:id': 'SectionController.show',
+  'post /company/:companyUrl/project/create': 'ProjectController.create',
+
+  'post /company/:companyUrl/invite': 'InvitationController.inviteToCompany',
+
+  'post /company/:companyUrl/join' : 'CompanyController.join'
 
   /***************************************************************************
   *                                                                          *

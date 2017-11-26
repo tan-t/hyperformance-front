@@ -3,11 +3,11 @@
   <head>
     <title><%=typeof title == 'undefined' ? 'New Sails App' : title%></title>
 
-    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet"></link>
-    <link href="https://unpkg.com/vuetify/dist/vuetify.min.css" rel="stylesheet" type="text/css">
     <!-- Viewport mobile tag for sensible mobile support -->
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
+    <link href="https://unpkg.com/vuetify/dist/vuetify.min.css" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
 
     <!--
         Stylesheets and Preprocessors
@@ -36,9 +36,7 @@
   </head>
 
   <body>
-    <div id="app">
-      <%- body %>
-    </div>
+    <div id="app"></div>
 
 
 

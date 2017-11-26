@@ -28,12 +28,12 @@ module.exports = function (grunt) {
       },
       module: {
         loaders: [
+          {test: /\.vue$/, loader: 'vue-loader'},
           {
             test: /\.js$/,
             loader: 'babel-loader',
             include: [resolve('client/web')]
-          },
-          {test: /\.vue$/, loader: 'vue-loader'}
+          }
         ]
       },
       plugins: [
