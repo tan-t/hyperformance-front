@@ -42,24 +42,34 @@ module.exports.routes = {
   'get /company/:companyUrl': 'CompanyController.show',
   'post /company/create': 'CompanyController.create',
   'post /company/:companyUrl/update': 'CompanyController.update',
+  'post /company/:companyUrl/invite': 'InvitationController.inviteToCompany',
   'get /company/:companyUrl/member' : 'CompanyController.member',
   'get /company/:companyUrl/invitation' : 'CompanyController.invitation',
-
-  'get /project/:projectUrl': 'ProjectController.show',
-  'post /project/create': 'ProjectController.create',
-  'post /project/:projectUrl/update': 'ProjectController.update',
-
-
   'get /company/:companyUrl/member/:id': 'CompanyMemberController.show',
   'get /company/:companyUrl/ismember': 'CompanyController.isMember',
   'post /company/:companyUrl/member/:id/update': 'CompanyMemberController.update',
+  'post /company/:companyUrl/join' : 'CompanyController.join',
 
-  'get /project/:projectUrl/section/:id': 'SectionController.show',
+
+  'get /project/:projectUrl': 'ProjectController.show',
   'post /company/:companyUrl/project/create': 'ProjectController.create',
+  'post /project/:projectUrl/update': 'ProjectController.update',
+  'post /project/:projectUrl/invite': 'InvitationController.inviteToProject',
+  'get /project/:projectUrl/member' : 'ProjectController.member',
+  'get /project/:projectUrl/invitation' : 'ProjectController.invitation',
+  'get /project/:projectUrl/member/:id': 'ProjectMemberController.show',
+  'get /project/:projectUrl/ismember': 'ProjectController.isMember',
+  'post /project/:projectUrl/member/:id/update': 'ProjectMemberController.update',
+  'post /project/:projectUrl/join' : 'ProjectController.join',
 
-  'post /company/:companyUrl/invite': 'InvitationController.inviteToCompany',
 
-  'post /company/:companyUrl/join' : 'CompanyController.join'
+
+  'get /project/:projectUrl/section/:id/member/': 'SectionController.member',
+  'get /project/:projectUrl/section/query': 'SectionController.query',
+  'get /project/:projectUrl/section/:id': 'SectionController.show',
+  'get /project/:projectUrl/section/': 'SectionController.show',
+  'post /project/:projectUrl/section/create': 'SectionController.create',
+
 
   /***************************************************************************
   *                                                                          *

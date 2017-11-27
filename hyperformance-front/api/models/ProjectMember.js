@@ -8,7 +8,18 @@
 module.exports = {
 
   attributes: {
-
+    project_url:{
+      type:'string',
+      required:true
+    },
+    member_name:{
+      type:'string'
+    },
+    member_name_sortable:{
+      type:'string'
+    },
+    user_id : {
+      required:true
+    }
   }
 };
-

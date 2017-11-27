@@ -41,7 +41,7 @@
             </v-edit-dialog>
           </v-container>
           <v-container v-if="!header.editable">
-            {{props.item[header.value]}}
+            {{format(props.item[header.value],props.item,header.formatters)}}
           </v-container>
         </v-container>
 
@@ -50,7 +50,7 @@
         </v-container>
 
         <v-container v-if="header.type == 'ACTION'">
-          <v-btn @click="onClickAction" :data-id="props.item[header.actionId]">{{header.actionName}}</v-btn>
+          <v-btn @click="onClickAction(props.item[header.actionId])" :data-id="props.item[header.actionId]">{{header.actionName}}</v-btn>
         </v-container>
 
         </td>
@@ -73,8 +73,17 @@ import AbstractTag from '@/components/bt/misc/AbstractTag'
       AbstractTag
     },
     methods: {
-      onClickAction: function(e) {
-        this.$emit('clickaction',e);
+      onClickAction: function(actionId) {
+        this.$emit('clickaction',actionId);
+      },
+      format:function(value,record,opt_formatters) {
+        var formatInfo = {body:value};
+        if(opt_formatters){
+          opt_formatters.forEach((formatter)=>{
+            formatter(formatInfo,record);
+          });
+        }
+        return formatInfo.body;
       }
     },
     data () {

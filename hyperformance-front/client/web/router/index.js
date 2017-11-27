@@ -11,6 +11,9 @@ import CompanyMemberForm from '@/components/company/CompanyMemberForm'
 import CompanyDashBoard from '@/components/company/CompanyDashBoard'
 import ProjectDashBoard from '@/components/project/ProjectDashBoard'
 import ProjectForm from '@/components/project/ProjectForm'
+import ProjectJoin from '@/components/project/ProjectJoin'
+import ProjectMember from '@/components/project/ProjectMember'
+import ProjectMemberForm from '@/components/project/ProjectMemberForm'
 import SectionMst from '@/components/section/SectionMst'
 import Forbidden from '@/components/redirect/Forbidden'
 
@@ -157,16 +160,47 @@ var router = new Router({
       props:{action:'create'}
     },
     {
-      path: '/project/:projectId/dashboard',
-      name: 'ProjectDashBoard',
-      component: ProjectDashBoard,
-      meta: {title: 'DashBoard'}
+      path: '/project/join',
+      name: 'JoinProject',
+      component: ProjectJoin,
+      meta: {title: 'Join to Project'},
+      props: { action: 'join' },
+    },
+    // {
+    //   path: '/project/',
+    //   name: 'SelectProject',
+    //   component: ProjectSelect,
+    //   meta: {title: 'Select Project'}
+    // },
+    {
+      path: '/project/:projectUrl/member',
+      name: 'ProjectMember',
+      component: ProjectMember,
+      meta: {title: 'Project Members',concernProject:true}
     },
     {
-      path: '/project/:projectId/section',
+      path: '/project/:projectUrl/member/:id/edit',
+      name: 'ProjectMemberEdit',
+      component: ProjectMemberForm,
+      meta: {title: 'Edit Profile',concernProject : true}
+    },
+    {
+      path: '/project/:projectUrl/dashboard',
+      name: 'ProjectDashBoard',
+      component: ProjectDashBoard,
+      meta: {title: 'DashBoard',concernProject:true}
+    },
+    {
+      path: '/project/:projectUrl/section',
+      name: 'SectionMstAll',
+      component: SectionMst,
+      meta: {title: 'Sections',concernProject:true}
+    },
+    {
+      path: '/project/:projectUrl/section/:id',
       name: 'SectionMst',
       component: SectionMst,
-      meta: {title: 'Sections'}
+      meta: {title: 'Sections' ,concernProject:true}
     },
     {
       path: '/home/',
@@ -180,6 +214,16 @@ var router = new Router({
   ]
 })
 
+const PROJECT_MENU = [
+  {
+    name:'Project Dashboard',
+    icon:'dashboard',
+    action:(vm)=>{
+      vm.$router.push(`/project/${vm.$route.params.projectUrl}/dashboard`);
+    }
+  }
+];
+
 var Auth = {};
 
 router.beforeEach((to, from, next) => {
@@ -192,6 +236,7 @@ router.beforeEach((to, from, next) => {
 
   concernAuth(to,from)
   .then(concernCompany.bind(null,to,from))
+  .then(concernProject.bind(null,to,from))
   .then(ok.bind(null,next))
   .catch((p)=>{
     next(p);
@@ -234,6 +279,27 @@ const concernCompany = function(to,from) {
       io.socket.get(`/company/${companyUrl}/ismember`,(res,stat)=>{
         console.log(stat.statusCode);
         if(stat.statusCode == 200) {
+          resolve();
+          return;
+        } else {
+          reject({path:'/forbidden'});
+          return;
+        }
+      });
+    } else {
+      resolve();
+    }
+  });
+}
+
+const concernProject = function(to,from) {
+  return new Promise(function(resolve, reject) {
+    if(to.matched.some(record=>record.meta.concernProject)){
+      var projectUrl = to.params.projectUrl;
+      io.socket.get(`/project/${projectUrl}/ismember`,(res,stat)=>{
+        console.log(stat.statusCode);
+        if(stat.statusCode == 200) {
+          to.meta.actions = PROJECT_MENU;
           resolve();
           return;
         } else {

@@ -74,6 +74,9 @@ module.exports = {
   showValidInvitationsToCompany:function(companyUrl) {
     return InvitationService.showValidInvitations('COMPANY',companyUrl);
   },
+  showValidInvitationsToProject:function(projectUrl) {
+    return InvitationService.showValidInvitations('PROJECT',projectUrl);
+  },
   showValidInvitations: function(type,url) {
     return new Promise(function(resolve, reject) {
       Invitation.find({type,url,means:['APPLICATION','MAIL'],valid:true}).exec((err,invitations)=>{
@@ -125,8 +128,35 @@ module.exports = {
     });
   },
   joinToCompany: function(joined,url,token) {
+    return InvitationService.goJoin('COMPANY',joined,url,token);
+  },
+  joinToProject: function(joined,url,token) {
+    return InvitationService.goJoin('PROJECT',joined,url,token);
+  },
+  goJoin:function(type,joined,url,token) {
     return new Promise(function(resolve, reject) {
-      CompanyMember.create({company_url:url,user_id:joined.id,member_name:joined.username,member_name_sortable:joined.username}).exec((err,member)=>{
+      var memberModel;
+      var urlParam;
+      switch (type) {
+        case 'COMPANY':
+        memberModel = CompanyMember;
+        urlParam = 'company_url';
+        break;
+        case 'PROJECT':
+        memberModel = ProjectMember;
+        urlParam = 'project_url';
+        break;
+        default:
+        return reject('invalid type');
+      }
+
+      var model = {
+        user_id:joined.id,
+        member_name:joined.username,
+        member_name_sortable:joined.username
+      };
+      model[urlParam] = url;
+      memberModel.create(model).exec((err,member)=>{
         if(err) {
           reject(err);
         }
@@ -147,8 +177,14 @@ module.exports = {
       });
     });
   });
-},
+  },
   validateJoinToCompany:function(url,token) {
+    return InvitationService.validateJoin('COMPANY',url,token);
+  },
+  validateJoinToProject:function(url,token) {
+    return InvitationService.validateJoin('PROJECT',url,token);
+  },
+  validateJoin:function(type,url,token) {
     return new Promise(function(resolve, reject) {
       Invitation.findOne({token}).exec((err,invitation)=>{
         if(err) {
@@ -161,7 +197,7 @@ module.exports = {
           return;
         }
 
-        if(invitation.type !== 'COMPANY' || invitation.url !== url) {
+        if(invitation.type !== type || invitation.url !== url) {
           reject('invalid url.');
         }
 

@@ -29,7 +29,7 @@
 
       <v-flex xs12 sm6 offset-sm3>
         <v-subheader>Action</v-subheader>
-      <v-card v-for="action in actions" :key="action.id" transition="slide-x-transition">
+      <v-card v-for="action in actions" :key="action.name" transition="slide-x-transition">
         <v-card-media :src="action.img" height="200px">
         </v-card-media>
         <v-card-title primary-title>
@@ -39,7 +39,7 @@
           </div>
         </v-card-title>
         <v-card-actions>
-          <v-btn flat color="orange">go</v-btn>
+          <v-btn flat color="orange" @click="handleAction(action)">go</v-btn>
         </v-card-actions>
       </v-card>
     </v-flex>
@@ -47,26 +47,45 @@
 </template>
 
 <script>
-const getCompanies = function() {
+const getActions = function() {
   return new Promise(function(resolve, reject) {
     var actions = [
       {
-      id: 1,
-      name: 'Invite Members',
-      help: 'てすとてすとてすとてすと',
-      img: '/images/invitation.jpeg'
+      name: 'Team',
+      help: 'Nothing starts without members that commit themselves to the project. Here, you can invite new members and manage their profiles.',
+      img: '/images/invitation.jpeg',
+      action:(vm)=>{
+        vm.$router.push(vm.getActionUrl('member'));
+      }
     },
-  {
-  id: 3,
-  name: 'Schedule Practices',
-  help: 'てすとてすとてすとてすと',
-  img: '/images/dance-practice.jpeg'
+    {
+    name: 'Sections',
+    help: 'Organize your team is always important. Here, you can maintain your project\'s section hierarchy, like \'Interpretation\' , \'Lighting\' or \'Stage Manager\' etc...',
+    img: '/images/section.jpeg',
+    action:(vm)=>{
+      vm.$router.push(vm.getActionUrl('section'));
+    }
   },
   {
-  id: 2,
-  name: 'Dive Into Project',
-  help: 'てすとてすとてすとてすと',
-  img: '/images/project.jpg'
+  name: 'Production Studio',
+  help: 'Welcome to the Production Studio! Production is the key team that organizes everything the performance needs to be public. Here, you can PLAN and FIX about the performance, like when to play, when to run-through, or how much to spend...',
+  img: '/images/production_studio.jpeg',
+  action:(vm)=>{
+    vm.$router.push(vm.getActionUrl('production'));
+  },
+  },
+  {
+  name: 'Script & Scenes',
+  help: 'It is really good to analyze, especially when you are trying a difficult project. Here, you can break up your play script into pieces, aka \'scenes\'.',
+  img: '/images/script.jpeg',
+  action:(vm)=>{
+    vm.$router.push(vm.getActionUrl('scene'));
+  }
+  },
+  {
+  name: 'Schedule Practices',
+  help: 'test',
+  img: '/images/dance-practice.jpeg'
   },
   ];
     resolve(actions);
@@ -77,18 +96,36 @@ export default {
   name: 'ProjectDashBoard',
 
   beforeRouteEnter(route, redirect, next) {
-    getCompanies().then(res => {
+    var projectUrl = route.params.projectUrl;
+    getActions().then(res => {
       next(vm => {
-        vm.actions = res
+        vm.initialize(projectUrl,res);
       });
     });
   },
 
   beforeRouteUpdate(to, from, next) {
-    getCompanies().then(res => {
-      this.actions = res;
+    var projectUrl = to.params.projectUrl;
+    getActions().then(res => {
+      this.initialize(projectUrl,res);
       next();
     });
+  },
+
+  methods: {
+    initialize:function(projectUrl,actions) {
+      this.projectUrl = projectUrl;
+      this.actions = actions;
+    },
+    handleAction: function(actionItem) {
+      actionItem.action(this);
+    },
+    getRootUrl: function(){
+      return `/project/${this.projectUrl}/`;
+    },
+    getActionUrl: function(action) {
+      return this.getRootUrl() + action;
+    }
   },
 
   data: () => {
@@ -99,8 +136,15 @@ export default {
         { title: '第二通しまであと：10日',actions:[{text:'Check Schedule'}],  flex: 6 ,progress:90, color:'info' },
         { title: '総残席数：12', actions:[{text:'Check Sheets'}], flex: 6 ,progress:95, color:'success' },
         { title: '稽古工数：200h/1460h', actions:[{text:'Check Plans'}], flex: 6 ,progress:80, color:'warning' }
-      ]
+      ],
+      projectUrl:''
     };
   }
 }
 </script>
+
+<style>
+  h3 {
+    text-align: left;
+  }
+</style>

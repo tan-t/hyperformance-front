@@ -8,7 +8,7 @@
 module.exports = {
 
   attributes: {
-    project_id: {
+    project_url: {
       required:true
     },
     name: {

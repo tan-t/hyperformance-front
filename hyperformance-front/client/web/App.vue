@@ -6,20 +6,12 @@
         app
       >
         <v-list dense>
-          <v-list-tile @click="">
+          <v-list-tile v-for="action in actions" @click="handleAction(action)" :key="action.name">
             <v-list-tile-action>
-              <v-icon>home</v-icon>
+              <v-icon>{{action.icon}}</v-icon>
             </v-list-tile-action>
             <v-list-tile-content>
-              <v-list-tile-title>Home</v-list-tile-title>
-            </v-list-tile-content>
-          </v-list-tile>
-          <v-list-tile @click="">
-            <v-list-tile-action>
-              <v-icon>contact_mail</v-icon>
-            </v-list-tile-action>
-            <v-list-tile-content>
-              <v-list-tile-title>Contact</v-list-tile-title>
+              <v-list-tile-title>{{action.name}}</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
         </v-list>
@@ -52,12 +44,23 @@
 
 <script>
 const DEFAULT_TITLE = 'Hyperformance v0.0.1';
+const DEFAULT_ACTIONS = [
+  {
+  name:'Home',
+  icon:'home',
+  action:(vm)=>{
+    vm.$router.push('/home/');
+  }
+},
+];
+
 export default {
   name: 'app',
   data: () => ({
       drawer: null,
       title: DEFAULT_TITLE,
-      user:null
+      user:null,
+      actions:DEFAULT_ACTIONS,
     }),
   watch: {
   '$route': function(value) {
@@ -67,6 +70,13 @@ export default {
     this.title = title;
 
     this.user = this.$router.Auth.user;
+
+    if(value.meta.actions) {
+      this.actions = DEFAULT_ACTIONS.concat(value.meta.actions);
+    } else {
+      this.actions = DEFAULT_ACTIONS;
+    }
+    
   },
 },
 methods:{
@@ -78,6 +88,9 @@ methods:{
   },
   signup:function(e) {
     this.$router.push('/user/new');
+  },
+  handleAction:function(action) {
+    action.action(this);
   }
 }
     }

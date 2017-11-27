@@ -160,8 +160,8 @@ export default {
       this.invitations.push({to:this.inviting,status:'LISTING'});
       this.inviting = '';
     },
-    onClickEdit: function(e) {
-      console.log(e.target.parentElement.dataset.id);
+    onClickEdit: function(id) {
+      // console.log(e.target.parentElement.dataset.id);
     }
   },
   data () {

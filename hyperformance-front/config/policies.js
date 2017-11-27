@@ -61,14 +61,28 @@ module.exports.policies = {
   InvitationController: {
     '*':false,
     inviteToCompany:['sessionAuth','isCompanyMember'],
-    createPublicLinkToCompany:['sessionAuth','isCompanyMember']
+    createPublicLinkToCompany:['sessionAuth','isCompanyMember'],
+    inviteToProject:['sessionAuth','isProjectMember'],
+    createPublicLinkToProject:['sessionAuth','isProjectMember'],
   },
   ProjectController: {
     '*':false,
     create:['sessionAuth','isCompanyMember'],
     show:['sessionAuth','isProjectMember'],
-    update:['sessionAuth','isProjectMember']
+    update:['sessionAuth','isProjectMember'],
+    join:'sessionAuth',
+    isMember:'sessionAuth',
+    member:['sessionAuth','isProjectMember'],
+    invitation:['sessionAuth','isProjectMember'],
+    index:'sessionAuth'
   },
+  SectionController: {
+    '*':false,
+    create:['sessionAuth','isProjectMember'],
+    show:['sessionAuth','isProjectMember'],
+    member:['sessionAuth','isProjectMember'],
+    query:['sessionAuth','isProjectMember'],
+  }
 
   // RabbitController: {
 

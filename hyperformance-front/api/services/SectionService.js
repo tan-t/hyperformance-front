@@ -1,9 +1,9 @@
 module.exports = {
-  register: function(body) {
+  register: function(projectUrl,body) {
     return new Promise(function(resolve, reject) {
       var sectionCreate = Promise.defer();
 
-      Section.create(toSectionModel(body)).exec((err, created) => {
+      Section.create(toSectionModel(projectUrl,body)).exec((err, created) => {
         sectionCreate.resolve(created);
       });
 
@@ -51,22 +51,23 @@ module.exports = {
     });
   },
 
-  show: function(projectId, id) {
+  show: function(projectUrl, id) {
     var postProcess = function(resolved) {
       return new Promise(function(resolve, reject) {
-        resolved.ancestors = [rootAncestor(projectId)].concat(resolved.ancestors);
+        resolved.ancestors = [rootAncestor(projectUrl)].concat(resolved.ancestors);
+        console.log(resolved);
         resolve(resolved);
       });
     }
 
-    var process = function(projectId, id) {
+    var process = function(projectUrl, id) {
       if (!id || id == 0) {
         return new Promise(function(resolve, reject) {
           Section.find({
-            project_id: projectId
+            project_url: projectUrl
           }).exec((err, sections) => {
             resolve({
-              section: rootAncestor(projectId),
+              section: rootAncestor(projectUrl),
               ancestors: [],
               decendants: sections
             });
@@ -77,8 +78,9 @@ module.exports = {
 
       return new Promise(function(resolve, reject) {
         Section.findOne({
-          id,project_id:projectId
+          id,project_url:projectUrl
         }).exec((err, section) => {
+          console.trace({projectUrl,id});
 
           if(!section) {
             reject('invalid project id.');
@@ -135,15 +137,69 @@ module.exports = {
         });
       });
     }
-    return process(projectId, id).then(postProcess);
-  }
+    return process(projectUrl, id).then(postProcess);
+  },
 
+  loadSectionMembers:function(projectUrl,sectionId) {
+    return new Promise(function(resolve, reject) {
+      SectionStructure.find({ancestor:sectionId}).then((ancestors)=>{
+        SectionMember.find({project_url:projectUrl,section_id:ancestors.map(ancestor=>ancestor.decendant)})
+        .then(sectionMembers=>{
+          Promise.all([
+            ProjectMember.find({id:sectionMembers.map(sectionMember=>sectionMember.member_id)}),
+            SectionService.aggregateSectionsToMembers(sectionMembers)
+          ]).then((results)=>{
+              var projectMembers = results[0];
+              var memberSectionMap = results[1];
+              projectMembers.forEach(projectMember=>{
+                projectMember.sections = memberSectionMap[projectMember.id];
+              });
+              resolve(projectMembers);
+          }).catch(err=>{
+            reject(err);
+          });
+        }).catch(err=>{
+          reject(err);
+        });
+      }).catch(err=>{
+        reject(err);
+      });
+    });
+  },
+  aggregateSectionsToMembers: function(sectionMembers){
+    var map = {};
+    sectionMembers.forEach(sectionMember=>{
+      var arr = map[sectionMember.member_id];
+      if(!arr) {
+        arr = [];
+        map[sectionMember.member_id] = arr;
+      }
+
+      arr.push(sectionMember.section_id);
+    });
+    return Section.find({id:sectionMembers.map(sectionMember=>sectionMember.section_id).filter((id,inx,arr)=>{
+      return arr.indexOf(id) == inx;
+    })}).then((sections)=>{
+      Object.keys(map).forEach((memberId)=>{
+        map[memberId] = map[memberId].map(sectionId=>{
+          return sections.find(section=>section.id == sectionId);
+        });
+      });
+      return map;
+    });
+  },
+  query:function(projectUrl,query) {
+    return Section.find({project_url:projectUrl,name:{'contains':query}})
+      .then(records=>{
+        return records.map(toSectionBean);
+    });
+  }
 }
 
-const toSectionModel = function(body) {
+const toSectionModel = function(projectUrl,body) {
   return {
     id: body.id,
-    project_id: body.projectId,
+    project_url: projectUrl,
     name: body.name
   }
 }
@@ -155,10 +211,20 @@ const toSectionStructureModel = function(body, id) {
   }
 }
 
-const rootAncestor = function(projectId) {
+const rootAncestor = function(projectUrl) {
   return {
     id: 0,
-    project_id: projectId,
+    project_url: projectUrl,
     name: 'root'
   }
+}
+
+const toSectionBean = function(section) {
+  return {
+    label:section.name,
+    value:{
+      label:section.name,
+      id:section.id
+    }
+  };
 }

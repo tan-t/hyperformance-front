@@ -111,6 +111,7 @@ export default {
         io.socket.post(getUrl(this.action,model.id,this.companyUrl),model,(res,stat)=>{
           switch (stat.statusCode) {
             case 200:
+            case 201:
             this.$router.push(getUrl('dashboard',res.url));
             return;
             case 400:
