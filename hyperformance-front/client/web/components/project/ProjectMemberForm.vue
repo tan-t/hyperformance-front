@@ -7,37 +7,27 @@
   </v-flex>
   <v-flex xs10 offset-xs1>
   <v-container>
-  <v-card>
-  <v-card-title>profile</v-card-title>
-  {{sections}}
   <abstract-form ref="form" :fields="fields">
   </abstract-form>
-
-
-
   <v-card>
-  <v-card-title>sections</v-card-title>
-  <v-container v-for="(section,inx) in sections">
-    <v-layout>
-    <v-flex xs11>
-    <search-select
-    :label="'Section'"
-    v-model="section.value"
-    :error-messages="section.errors"
-    :query="query"
-    @change="(v)=>{section.value = v;}"
-    :defaultitems="defaultItems"
-    ></search-select>
-    </v-flex>
-    <v-flex xs1>
-      <v-btn @click="()=>{sections.splice(inx,1);}"><v-icon>delete</v-icon></v-btn>
-    </v-flex>
-    </v-layout>
+  <v-container>
+  <v-select
+  label="sections"
+  autocomplete
+  :loading="loading"
+  multiple
+  cache-items
+  chips
+  required
+  :items="sectionItems"
+  :rules="[() => sections.length > 0 || 'You must choose at least one']"
+  :search-input.sync="sectionSearch"
+  v-model="sections"
+  item-text="label"
+  item-value="value"
+  ></v-select>
   </v-container>
-  <v-btn @click="onClickAddSection">add section</v-btn>
-</v-card>
-
-</v-card>
+  </v-card>
   <v-btn
    @click="onClickBack"
    v-if="!welcome"
@@ -138,7 +128,7 @@ export default {
         this.sections = model.sections.map(section=>{
           return {errors:[],value:section.value};
         });
-        this.defaultItems = model.sections.map(section=>{
+        this.sectionItems = model.sections.map(section=>{
           return {label:section.value.label,value:section.value};
         });
       }
@@ -199,6 +189,13 @@ export default {
         errors:[]
       });
     },
+    querySelections (v) {
+      this.loading = true;
+      this.query(v).then(records=>{
+        this.sectionItems = records;
+        this.loading = false;
+      });
+    },
     query:function(v) {
       return new Promise(function(resolve, reject) {
         io.socket.get(`/project/${this.projectUrl}/section/query?query=${v}`,(res,jwres)=>{
@@ -224,6 +221,11 @@ export default {
     },
     welcome:function(){
       return this.mode == 'welcome';
+    }
+  },
+  watch: {
+    sectionSearch (val) {
+      val && this.querySelections(val)
     }
   },
   data () {
@@ -256,7 +258,9 @@ export default {
       showsButton:true,
       snackbar:false,
       mode:'',
-      defaultItems:[]
+      loading: false,
+      sectionItems: [],
+      sectionSearch: null,
     }
   }
 }

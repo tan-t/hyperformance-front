@@ -21,6 +21,19 @@ module.exports = {
 				return res.negotiate(err);
 			}
 			res.created(created);
-		}
+		});
 	},
+	upload:function(req,res) {
+		var stream = req.file('script');
+		console.log(stream);
+
+		var script = '';
+		stream.on('data',function(chunk){
+			script += chunk._readableState.buffer.toString();
+		});
+
+		stream.on('end',()=>{
+			res.ok({script});
+		});
+	}
 };

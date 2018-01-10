@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
+import Top from '@/components/Top'
 import UserForm from '@/components/user/UserForm'
 import Home from '@/components/user/Home'
 import CompanyForm from '@/components/company/CompanyForm'
@@ -94,8 +94,8 @@ var router = new Router({
   routes: [
     {
       path: '/',
-      name: 'Hello',
-      component: HelloWorld,
+      name: 'Top',
+      component: Top,
       meta: {ignoresAuth: true}
     },
     {

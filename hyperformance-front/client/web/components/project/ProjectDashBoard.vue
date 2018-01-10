@@ -76,7 +76,7 @@ const getActions = function() {
   },
   {
   name: 'Script & Scenes',
-  help: 'It is really good to analyze, especially when you are trying a difficult project. Here, you can break up your play script into pieces, aka \'scenes\'.',
+  help: 'It is really good to analyze, especially when you are challenging against a difficult project. Here, you can break up your play script into pieces, aka \'scenes\'.',
   img: '/images/script.jpeg',
   action:(vm)=>{
     vm.$router.push(vm.getActionUrl('scene'));

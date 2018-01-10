@@ -32,8 +32,10 @@
       </v-toolbar>
       <v-content>
         <v-container fluid fill-height>
-          <router-view>
+        <transition name="fade">
+          <router-view >
           </router-view>
+        </transition>
         </v-container>
       </v-content>
       <v-footer color="indigo" app>
@@ -64,6 +66,11 @@ export default {
     }),
   watch: {
   '$route': function(value) {
+
+    if(value.fullPath == '/') {
+      this.drawer = null;
+    }
+
     // lets watch for route changes on our
     // main parent app component.
     var title = value.meta.title || DEFAULT_TITLE;
@@ -76,7 +83,7 @@ export default {
     } else {
       this.actions = DEFAULT_ACTIONS;
     }
-    
+
   },
 },
 methods:{
@@ -104,5 +111,11 @@ methods:{
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .2s
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0
 }
 </style>

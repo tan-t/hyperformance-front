@@ -14,12 +14,16 @@ module.exports = {
     script_id:{
       required:true
     },
+    name:{
+      name:'string',
+      required:true
+    },
     from:{
       type:'integer',
       required:true
     },
     to:{
-      type:'integer'
+      type:'integer',
       required:true
     }
   }

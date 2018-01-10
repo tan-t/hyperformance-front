@@ -13,6 +13,8 @@
 
 <script>
 import AbstractForm from '@/components/bt/form/AbstractForm'
+import Postable from '@/mixins/Postable'
+import AbstractFormManageable from '@/mixins/AbstractFormManageable'
 
 const baseUrl = '/user/'
 const getUrl = function (action,opt_id) {
@@ -22,9 +24,13 @@ const getUrl = function (action,opt_id) {
   }
   return baseUrl + suffix;
 }
-const getPost = function(id,cb) {
-  io.socket.get(getUrl('',id),(res)=>{
-    cb(null,res);
+const loadData = function(param,cb) {
+  if(!'id' in param){
+    cb();
+    return;
+  }
+  io.socket.get(getUrl('',param.id),(res)=>{
+    cb(res);
   })
 }
 
@@ -33,106 +39,60 @@ export default {
   components: {
     AbstractForm
   },
-
-  beforeRouteEnter (route, redirect, next) {
-    if(!route.params.id){
-      next(vm => vm.clear())
-      return;
-    }
-
-    getPost(route.params.id, (err, post) => {
-      next(vm => vm.setData(err, post))
-    })
-  },
-
-  beforeRouteUpdate (to, from, next) {
-    if(!to.params.id){
-      next();
-      return;
-    }
-
-    getPost(to.params.id, (err, post) => {
-      this.setData(err, post)
-      next()
-    })
-  },
+  mixins:[Postable,AbstractFormManageable],
+      beforeRouteEnter (route, redirect, next) {
+        loadData(route.params, (data) => {
+          next(vm => vm.initialize(data))
+        })
+    },
+    
+      beforeRouteUpdate (to, from, next) {
+        loadData(to.params, (data) => {
+          this.initialize(data)
+          next()
+        })
+    },
   methods:
   {
-    createModel: function() {
-      var model = this.fields.reduce((a,b)=>{a[b.id] = b.model; return a;},{});
+    createModelInternal: function(model) {
       delete model.password2;
       return model;
     },
-    setData: function(err,model) {
-      if(!err){
-        this.setModel(model);
+    initialize: function(model) {
+      if(!model){
+        this.clear();
+        return;
       }
+       this.setModel(model);
     },
-    setModel: function(model) {
-      Object.keys(model).forEach(key=>{
-        let field = this.fields.find(f=>f.id == key);
-        if(!field){
-          return;
-        }
-        field.model = model[key];
-      });
-      // べたがき...
+    setModelInternal: function(model) {
       this.getItem('password2').model = this.getItem('password').model;
     },
-    clear: function() {
-      this.$refs.form.reset()
-    },
-    getItem: function(itemId) {
-      return this.fields.find(field=>field.id == itemId);
+    getForm : function() {
+      return this.$refs.form;
     },
     onClickRegister: function (e) {
-      if (this.$refs.form.validate()) {
-        this.fields.forEach(field=>{
-          field.errors = [];
-        });
+      if (this.getForm().validate()) {
+        this.clearErrors();
         var model = this.createModel();
-        io.socket.post(getUrl(this.action,model.id),model,(res,stat)=>{
-          switch (stat.statusCode) {
-            case 200:
-            case 201:
-            this.login(model.username,model.password);
-            return;
-            case 400:
-            console.log(res);
-            this.handleServerError(res);
-            return;
-            default:
-            console.log(stat.statusCode);
-            console.log(res);
-          }
-        });
+        this.post(getUrl(this.action,model.id),model,(res)=>{this.login(model.username,model.password);});
       }
     },
     login:function(identifier,password) {
-      io.socket.post('/auth/local',{identifier,password},(res,stat)=>{
-        switch (stat.statusCode) {
-          case 200:
-            var redirect = this.$route.query.redirect;
+      this.post('/auth/local',{identifier,password},
+      (res)=>{
+        var redirect = this.$route.query.redirect;
             if(!redirect){
               redirect = '/home/';
             }
             this.$router.push(redirect)
-          return;
-          case 403:
-            this.errors = ['identifier and password not match.'];
-            return;
-          default:
-          console.log(stat.statusCode);
-          console.log(res);
-        }
+      },
+      (error,statusCode)=>{
+        this.errors = ['identifier and password not match.'];
       });
     },
     handleServerError: function(error) {
-      Object.keys(error.invalidAttributes).forEach(attribute=>{
-        console.log(attribute);
-        var errors = error.invalidAttributes[attribute].map(e=>e.message);
-        this.getItem(attribute).errors = errors;
-      });
+      this.setErrors(error.invalidAttributes);
     },
     passwordCheck: function() {
       return this.getItem('password').model == this.getItem('password2').model ? true : 'password not match';

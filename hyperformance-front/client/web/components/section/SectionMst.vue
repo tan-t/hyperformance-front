@@ -54,6 +54,7 @@
 
 <script>
 import AbstractGrid from '@/components/bt/grid/AbstractGrid'
+import Postable from '@/mixins/Postable'
 
 const baseUrl = function(projectUrl){
    return `/project/${projectUrl}/section/`;
@@ -94,6 +95,7 @@ export default {
   components:{
     AbstractGrid
   },
+  mixins:[Postable],
   beforeRouteEnter (route, redirect, next) {
     var projectUrl = route.params.projectUrl;
     var id = route.params.id;
@@ -130,30 +132,6 @@ export default {
       this.decendants = decendants;
       this.members = members;
     },
-    onClickRegister: function (e) {
-      //   io.socket.post(getUrl(this.action,model.id),model,(res,stat)=>{
-      //     switch (stat.statusCode) {
-      //       case 200:
-      //       this.$router.push(getUrl('',res.id));
-      //       return;
-      //       case 400:
-      //       console.log(res);
-      //       this.handleServerError(res);
-      //       return;
-      //       default:
-      //       console.log(stat.statusCode);
-      //       console.log(res);
-      //     }
-      //   });
-      // }
-    },
-    handleServerError: function(error) {
-      // Object.keys(error.invalidAttributes).forEach(attribute=>{
-      //   console.log(attribute);
-      //   var errors = error.invalidAttributes[attribute].map(e=>e.message);
-      //   this.getItem(attribute).errors = errors;
-      // });
-    },
     createModel:function() {
       var model = {
         name:this.sectionName,
@@ -164,18 +142,9 @@ export default {
     onClickAdd: function(e) {
       this.dialog = false;
       var model = this.createModel();
-      io.socket.post(getUrl('create',null,this.projectUrl),model,(res,stat)=>{
-        switch (stat.statusCode) {
-          case 200:
-          case 201:
-          this.decendants.push(res); // TODO
-          this.snackbar = true;
-          break;
-          default:
-          console.log(stat.statusCode);
-          console.log(res);
-          this.handleServerError(res,stat);
-        }
+      this.post(getUrl('create',null,this.projectUrl),model,(res)=>{
+        this.decendants.push(res);
+        this.snackbar = true;
       });
     },
     onClickEdit: function(id) {
@@ -202,15 +171,6 @@ export default {
 
       ],
       memberHeaders:[
-        // {
-        //   text: '',
-        //   align:'center',
-        //   value: 'action',
-        //   type:'ACTION',
-        //   actionId:'id',
-        //   actionName:'Edit',
-        //   sortable:false
-        // },
         {
           text: 'Member Name',
           align:'center',
